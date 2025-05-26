@@ -5,7 +5,9 @@
             "src": "src/app.py",
             "use": "@vercel/python",
             "config": {
-                "maxLambdaSize": "50mb"
+                "maxLambdaSize": "100mb",
+                "memory": 2048,
+                "timeout": 120
             }
         }
     ],
