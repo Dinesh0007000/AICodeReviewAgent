@@ -4,7 +4,8 @@
             "src": "src/app.py",
             "use": "@vercel/python",
             "config": {
-                "buildCommand": "bash setup-build.sh && pip install -r requirements.txt"
+                "buildCommand": "bash setup-build.sh && pip install -r requirements.txt",
+                "runtime": "python3.11"
             }
         }
     ],
@@ -13,5 +14,8 @@
             "src": "/(.*)",
             "dest": "src/app.py"
         }
-    ]
+    ],
+    "env": {
+        "PYTHONPATH": "/vercel/path0/src"
+    }
 }
