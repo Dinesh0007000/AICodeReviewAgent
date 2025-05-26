@@ -1,6 +1,7 @@
 import os
 import shutil
 import tempfile
+import zipfile  # Moved to top
 from flask import Flask, request, send_file, render_template
 from werkzeug.utils import secure_filename
 from analyzer import CodeAnalyzer
@@ -40,36 +41,49 @@ def index():
         input_path = os.path.join(UPLOAD_FOLDER, "extracted")
         os.makedirs(input_path, exist_ok=True)
 
-        import zipfile
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall(input_path)
+        try:
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(input_path)
+        except zipfile.BadZipFile:
+            return "Invalid ZIP file", 400
 
-        analyzer = CodeAnalyzer(config)
-        analysis_results = analyzer.analyze(input_path)
+        try:
+            analyzer = CodeAnalyzer(config)
+            analysis_results = analyzer.analyze(input_path)
+        except Exception as e:
+            return f"Analysis failed: {str(e)}", 500
 
-        improver = CodeImprover(config)
-        improver.improve(input_path)
+        try:
+            improver = CodeImprover(config)
+            improver.improve(input_path)
+        except Exception as e:
+            return f"Improvement failed: {str(e)}", 500
 
-        output_gen = OutputGenerator(config, "output_codebase")
-        for root, _, files in os.walk(input_path):
-            for file in files:
-                file_path = os.path.join(root, file)
-                with open(file_path, 'r') as f:
-                    improved_code = f.read()
-                output_gen.save_improved_code(file_path, improved_code, analysis_results.get(file_path, {}))
+        try:
+            output_gen = OutputGenerator(config, "output_codebase")
+            for root, _, files in os.walk(input_path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    try:
+                        with open(file_path, 'r') as f:
+                            improved_code = f.read()
+                        output_gen.save_improved_code(file_path, improved_code, analysis_results.get(file_path, {}))
+                    except Exception as e:
+                        return f"Failed to process file {file_path}: {str(e)}", 500
 
-        report_path = output_gen.generate_report(dependencies=[])
+            report_path = output_gen.generate_report(dependencies=[])
+        except Exception as e:
+            return f"Report generation failed: {str(e)}", 500
 
         try:
             os.remove(zip_path)
         except FileNotFoundError:
-            pass  # File already deleted or never created
+            pass
 
-        # Fix: Use shutil.rmtree to delete directories, with error handling
         try:
             shutil.rmtree(input_path)
         except FileNotFoundError:
-            pass  # Directory already deleted or never created
+            pass
 
         return send_file(report_path, as_attachment=True)
     return render_template('index.html')
