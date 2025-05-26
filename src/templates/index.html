@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>AI Code Review Agent</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .progress {
+            display: none;
+        }
+
+        .progress.active {
+            display: block;
+        }
+    </style>
+    <script>
+        function showProgress() {
+            document.getElementById('progress').classList.add('active');
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>AI Code Review Agent</h1>
+        <form method="post" enctype="multipart/form-data" onsubmit="showProgress()">
+            <div class="form-group">
+                <label for="codebase">Upload Codebase (ZIP)</label>
+                <input type="file" class="form-control" id="codebase" name="codebase" accept=".zip" required>
+            </div>
+            <div class="form-group">
+                <label>Review Priorities (1-10)</label>
+                <input type="number" class="form-control" name="security_priority" placeholder="Security Priority"
+                    min="1" max="10" value="1">
+                <input type="number" class="form-control" name="performance_priority" placeholder="Performance Priority"
+                    min="1" max="10" value="1">
+                <input type="number" class="form-control" name="readability_priority" placeholder="Readability Priority"
+                    min="1" max="10" value="1">
+            </div>
+            <div class="form-group">
+                <label>Style Preferences</label>
+                <input type="number" class="form-control" name="line_length_python" placeholder="Python Line Length"
+                    value="88">
+                <input type="number" class="form-control" name="line_length_js" placeholder="JavaScript Print Width"
+                    value="80">
+                <input type="number" class="form-control" name="line_length_java" placeholder="Java Max Line Length"
+                    value="100">
+            </div>
+            <div class="form-group">
+                <label for="exclude">Exclude Files/Dirs (comma-separated)</label>
+                <input type="text" class="form-control" id="exclude" name="exclude"
+                    placeholder="e.g., tests/,node_modules/">
+            </div>
+            <div class="form-group">
+                <label for="aggressiveness">Improvement Aggressiveness</label>
+                <select class="form-control" id="aggressiveness" name="aggressiveness">
+                    <option value="low">Low</option>
+                    <option value="moderate" selected>Moderate</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Analyze and Improve</button>
+            <div id="progress" class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>

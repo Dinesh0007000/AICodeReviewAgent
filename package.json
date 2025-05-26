@@ -1,0 +1,8 @@
+{
+    "name": "ai-code-review-agent",
+    "version": "1.0.0",
+    "dependencies": {
+        "eslint": "^8.57.0",
+        "prettier": "^3.0.3"
+    }
+}
