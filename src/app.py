@@ -47,31 +47,37 @@ def index():
         except zipfile.BadZipFile:
             return "Invalid ZIP file", 400
 
+        supported_extensions = {".py": "python", ".js": "javascript", ".java": "java"}
+        code_files = []
+        dependencies = []
         try:
-            analyzer = CodeAnalyzer(config)
-            analysis_results = analyzer.analyze(input_path)
-        except Exception as e:
-            return f"Analysis failed: {str(e)}", 500
-
-        try:
-            improver = CodeImprover(config)
-            improver.improve(input_path)
-        except Exception as e:
-            return f"Improvement failed: {str(e)}", 500
-
-        try:
-            output_gen = OutputGenerator(config, "output_codebase")
             for root, _, files in os.walk(input_path):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    try:
-                        with open(file_path, 'r') as f:
-                            improved_code = f.read()
-                        output_gen.save_improved_code(file_path, improved_code, analysis_results.get(file_path, {}))
-                    except Exception as e:
-                        return f"Failed to process file {file_path}: {str(e)}", 500
+                if any(exclude in root for exclude in config.get("exclude", [])):
+                    continue
+                for f in files:
+                    ext = os.path.splitext(f)[1].lower()
+                    if ext in supported_extensions:
+                        code_files.append((os.path.join(root, f), supported_extensions[ext]))
+                    elif f in ('requirements.txt', 'package.json', 'pom.xml'):
+                        dependencies.append(os.path.join(root, f))
+        except Exception as e:
+            return f"Failed to scan directory: {str(e)}", 500
 
-            report_path = output_gen.generate_report(dependencies=[])
+        analyzer = CodeAnalyzer(config)
+        improver = CodeImprover(config)
+        output_gen = OutputGenerator(config, "output_codebase")
+
+        analysis_results = {}
+        for file_path, lang in code_files:
+            try:
+                analysis_results[file_path] = analyzer.analyze_file(file_path, lang)
+                improved_code = improver.improve_code(file_path, analysis_results[file_path], lang)
+                output_gen.save_improved_code(file_path, improved_code, analysis_results[file_path])
+            except Exception as e:
+                return f"Failed to process file {file_path}: {str(e)}", 500
+
+        try:
+            report_path = output_gen.generate_report(dependencies)
         except Exception as e:
             return f"Report generation failed: {str(e)}", 500
 
@@ -87,3 +93,6 @@ def index():
 
         return send_file(report_path, as_attachment=True)
     return render_template('index.html')
+
+if __name__ == "__main__":
+    app.run(debug=True)
