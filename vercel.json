@@ -1,18 +1,11 @@
 {
-    "version": 2,
     "builds": [
         {
             "src": "src/app.py",
             "use": "@vercel/python",
             "config": {
-                "maxLambdaSize": "100mb",
-                "memory": 2048,
-                "timeout": 120
+                "buildCommand": "bash setup-build.sh && pip install -r requirements.txt"
             }
-        },
-        {
-            "src": "package.json",
-            "use": "@vercel/node"
         }
     ],
     "routes": [
@@ -20,9 +13,5 @@
             "src": "/(.*)",
             "dest": "src/app.py"
         }
-    ],
-    "env": {
-        "PYTHON_VERSION": "3.11"
-    },
-    "buildCommand": "chmod +x setup-build.sh && ./setup-build.sh"
+    ]
 }
