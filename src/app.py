@@ -130,5 +130,9 @@ def api_analyze():
     
     return jsonify({"report": report_content, "output_dir": output_dir})
 
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204  # No content, suppresses the 404 error
+
 if __name__ == "__main__":
     app.run(debug=True)
