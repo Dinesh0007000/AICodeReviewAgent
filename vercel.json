@@ -4,14 +4,16 @@
             "src": "package.json",
             "use": "@vercel/node",
             "config": {
-                "buildCommand": "npm install eslint"
+                "installCommand": "npm install eslint",
+                "buildCommand": "echo 'Node.js dependencies installed'"
             }
         },
         {
             "src": "src/app.py",
             "use": "@vercel/python",
             "config": {
-                "buildCommand": "apt-get update && apt-get install -y openjdk-11-jre && pip install -r requirements.txt",
+                "installCommand": "apt-get update && apt-get install -y openjdk-11-jre && pip install -r requirements.txt",
+                "buildCommand": "echo 'Python dependencies installed'",
                 "runtime": "python3.11"
             }
         }
